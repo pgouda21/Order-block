@@ -1,0 +1,13 @@
+# All thresholds, weights and tunables live here (CLAUDE.md rule 9). Never put secrets here.
+# Sections are added phase by phase; unknown keys are rejected at startup.
+
+timezone: America/New_York   # internal clock; UI renders PT
+
+http:
+  timeout_s: 10
+  # Exponential backoff with full jitter on 429 / 5xx / transport errors.
+  # Publish gives up after max_attempts and retries on the next cycle.
+  retry:
+    max_attempts: 3
+    base_delay_s: 1.0
+    max_delay_s: 20.0

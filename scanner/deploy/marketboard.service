@@ -1,0 +1,43 @@
+# MarketBoard scanner. Install with deploy/install.sh; enable from P1 onward:
+#   sudo systemctl enable --now marketboard
+[Unit]
+Description=MarketBoard scanner (read-only market data, outbound only)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=marketboard
+Group=marketboard
+WorkingDirectory=/opt/marketboard/scanner
+EnvironmentFile=/etc/marketboard/env
+Environment=PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ExecStart=/opt/marketboard/.venv/bin/python -m marketboard.main
+Restart=on-failure
+RestartSec=30
+
+# Hardening (CLAUDE.md "Deploy (VM)")
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/marketboard
+ProtectHome=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

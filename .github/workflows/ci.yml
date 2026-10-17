@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scanner:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scanner
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: ruff check . && ruff format --check .
+      - run: mypy && mypy --strict tests
+      # Includes tests/test_no_trading.py, which greps the whole repo (Plan §11).
+      - run: pytest -q
+
+  worker:
+    runs-on: ubuntu-latest
+    env:
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Build web (Worker static assets)
+        working-directory: web
+        run: npm ci && npm run build
+      - name: Typecheck, test, dry-run bundle
+        working-directory: worker
+        run: npm ci && npm run check

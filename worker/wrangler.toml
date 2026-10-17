@@ -1,0 +1,34 @@
+name = "marketboard"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+# Never reachable outside Cloudflare Access: no workers.dev URL, no preview URLs.
+workers_dev = false
+preview_urls = false
+
+# Serve only on your own hostname, protected by an Access application (docs/P0-runbook.md §3).
+# routes = [{ pattern = "board.example.com", custom_domain = true }]
+
+[assets]
+directory = "../web/dist"
+binding = "ASSETS"
+# Run the Worker (and its JWT check) before serving any static file.
+run_worker_first = true
+not_found_handling = "single-page-application"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "marketboard"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"   # printed by `wrangler d1 create marketboard`
+migrations_dir = "migrations"
+
+[vars]
+RETENTION_SESSIONS = "60"
+
+[triggers]
+crons = ["30 10 * * *"]   # 10:30 UTC daily retention, before the US pre-market
+
+[observability]
+enabled = true
+
+# Secrets (never in this file): wrangler secret put ACCESS_TEAM_DOMAIN | ACCESS_AUD | INGEST_SERVICE_TOKEN_CLIENT_ID

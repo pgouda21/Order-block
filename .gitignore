@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+build/
+out/
+
+# Node / Cloudflare
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+
+# Secrets and local state (never commit)
+.env
+*.db
+*.db-journal

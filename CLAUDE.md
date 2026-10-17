@@ -1,4 +1,4 @@
-# CLAUDE.md — MarketBoard (v1.2)
+# CLAUDE.md — MarketBoard (v1.3)
 
 Private US-market board for swing/position decisions (not day trading): ranks the strongest bullish/bearish stocks (S&P 500 ∪ Nasdaq-100), sector rotation, breadth, and order-block/liquidity zones on 1D/4H/1H. Full spec: `MarketBoard-Plan.md` — read it before any change. Work phase by phase (P0 → P5) and do not start a phase until the previous one's acceptance criteria pass.
 
@@ -10,7 +10,7 @@ Private US-market board for swing/position decisions (not day trading): ranks th
 4. **No secrets in the repo.** Secrets come from env (`/etc/marketboard/env` on the VM, `wrangler secret` for the Worker). Provide `.env.example` only.
 5. **Never public.** Every Worker route verifies the Cloudflare Access JWT (`Cf-Access-Jwt-Assertion`) against team certs. Ingest routes accept only the service-token identity. No route is unauthenticated.
 6. **No personal or financial data** is collected or stored.
-7. **Telegram** sends only to `TELEGRAM_CHAT_ID`; ignore all other chats. Messages contain tickers, zones and percentages only.
+7. **Notifications go to the portal.** Alerts and digests are published to the Worker and shown in the UI. Telegram is optional and off (blank `TELEGRAM_*`); if it is ever enabled it sends only to `TELEGRAM_CHAT_ID`, ignores all other chats, and messages contain tickers, zones and percentages only.
 8. **Determinism + no look-ahead.** Detector/score functions are pure and take an explicit `asof`; they may only read bars with close time <= `asof`. Every signal carries `detected_at` (confirmation time, not candle time). `tests/test_no_lookahead.py` replays truncated series and asserts emitted signals never change. Backtests enter at the first bar open after `detected_at` plus costs.
 9. All thresholds/weights live in `settings.yaml` — no magic numbers in code.
 10. Time: ET (`America/New_York`) internally, PT in UI. Use the Alpaca calendar for holidays and early closes; never hard-code session times beyond defaults.
@@ -101,6 +101,7 @@ ALPACA_BASE_URL=https://paper-api.alpaca.markets
 CF_INGEST_URL=https://<host>/api/ingest
 CF_ACCESS_CLIENT_ID=
 CF_ACCESS_CLIENT_SECRET=
+# Optional, off when blank: alerts and digests show on the portal
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
 MB_DB_PATH=/var/lib/marketboard/cache.db

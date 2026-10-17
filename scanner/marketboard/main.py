@@ -75,7 +75,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--selftest",
         action="store_true",
-        help="P0 check: paper config, Alpaca clock, ingest ping, Telegram test message",
+        help="P0 check: paper config, Alpaca clock, ingest ping (Telegram only if configured)",
     )
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")

@@ -43,9 +43,19 @@ def test_all_checks_pass() -> None:
     ingest, telegram = FakeIngest({"ok": True}), FakeTelegram()
     results = run_checks(alpaca=FakeAlpaca(), ingest=ingest, telegram=telegram, now=NOW)
     assert [r.name for r in results] == ["config", "alpaca", "ingest", "telegram"]
-    assert all(r.ok for r in results)
+    assert [r.status for r in results] == ["pass"] * 4
     assert ingest.calls == [("ping", {"sent_at": int(NOW.timestamp())})]
     assert telegram.sent == ["MarketBoard self-test OK 2026-10-16 10:00 PDT"]
+
+
+def test_telegram_off_is_skipped_not_failed() -> None:
+    results = run_checks(
+        alpaca=FakeAlpaca(), ingest=FakeIngest({"ok": True}), telegram=None, now=NOW
+    )
+    by_name = {r.name: r for r in results}
+    assert by_name["telegram"].status == "skip"
+    assert all(r.ok for r in results)
+    assert "SKIP  telegram" in format_results(results)
 
 
 def test_failures_reported_and_secrets_redacted() -> None:
@@ -61,7 +71,7 @@ def test_failures_reported_and_secrets_redacted() -> None:
     assert "PKSECRET" not in by_name["alpaca"].detail
     assert "***" in by_name["alpaca"].detail
     assert not by_name["ingest"].ok
-    assert not by_name["telegram"].ok
+    assert by_name["telegram"].status == "skip"
     assert "FAIL" in format_results(results)
 
 

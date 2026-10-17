@@ -1,8 +1,11 @@
-# MarketBoard — Build Plan (v1.2)
+# MarketBoard — Build Plan (v1.3)
 
 Private US-market board for **swing / position decisions** (hours to weeks, not day trading). Ranks the strongest bullish and bearish stocks across the market, shows sector rotation and breadth, and draws order-block / liquidity zones. No holdings, no broker connection, $0/month.
 
 > Personal analytics tool. Not investment advice. Signals measure price/volume pressure, not buyer/seller identity. Smart Money Concepts are a popular framework, not a proven one — this system's job is to find out whether they work, and to say so when they don't.
+
+## Changelog v1.2 → v1.3
+- Notifications: alerts and digests are shown on the portal (Alerts and Digests tabs). Telegram is optional and off, so no Telegram setup or secrets are needed, and P0 no longer requires a Telegram test message.
 
 ## Changelog v1.1 → v1.2
 - New: **My List** tab, a personal screener over a ticker list (stocks and ETFs). Tickers only: no quantities, cost basis or imports (§15).
@@ -25,7 +28,7 @@ Private US-market board for **swing / position decisions** (hours to weeks, not 
 - Market pulse (SPY / QQQ / IWM trend, breadth) and sector flow (11 SPDR ETFs ranked by relative strength).
 - Top 20 bullish and top 20 bearish, ranked by a swing strength score with reasons and zones (OB, FVG, support, resistance, liquidity).
 - Outliers panel from the Alpaca screener, filtered for liquidity.
-- Telegram alerts (after P5 gate), a pre-market digest at 06:00 PT and an EOD recap at 13:15 PT.
+- Alerts (after P5 gate), a pre-market digest at 06:00 PT and an EOD recap at 13:15 PT, all shown on the portal. Telegram delivery is optional and off.
 - Validation harness, calibration report and decision log.
 
 **Non-functional**
@@ -48,7 +51,7 @@ Oracle Cloud A1 VM (account on PAYG; Always Free shapes still $0)
     detect/    swings → BOS → OB → FVG → liquidity/sweeps   (all stamped detected_at)
     score/     swing score + reasons · breadth · sector RS · regime tag
     validate/  signal ledger → forward returns → calibration / walk-forward / null baseline
-    alerts/    rules + dedupe (persisted) → Telegram   [disabled until P5 gate passes]
+    alerts/    rules + dedupe (persisted) → portal   [disabled until P5 gate passes; Telegram optional, off]
     digest/    premarket · EOD
     publish/   HTTPS → Cloudflare ingest (Access service token)
     SQLite:    bar cache, baselines, signal ledger, alert dedupe
@@ -193,6 +196,7 @@ The Worker verifies `Cf-Access-Jwt-Assertion` on every request; ingest routes al
 ## 9. Alerts & digests
 
 Alerts are **disabled until the P5 gate passes**, and only signal types that pass are enabled.
+Alerts and digests are published to the portal (`/api/ingest/alert`, `/api/ingest/digest`) and shown in the Alerts and Digests tabs. Telegram is optional and off; if enabled later, it mirrors the same messages.
 - `zone_touch`: live IEX price enters a fresh 1D/4H OB of a top-20 name.
 - `top5_entry`: a name enters bull/bear top 5 (once per day).
 - `sweep_reclaim`: a 1D/4H liquidity sweep and reclaim on a top-20 name.
@@ -221,7 +225,7 @@ Dedupe is persisted in SQLite (survives restarts): symbol + kind once per day; c
 ## 11. Security & hosting
 
 - Oracle account converted to **Pay As You Go** to avoid idle reclamation of the A1 VM. Use Always Free shapes only, and set a $1 budget alert.
-- Secrets in `/etc/marketboard/env` (0600, `marketboard` user): Alpaca paper key, Telegram token, Access service token.
+- Secrets in `/etc/marketboard/env` (0600, `marketboard` user): Alpaca paper key and Access service token (plus a Telegram token only if Telegram is ever enabled).
 - No trading path: read-only Alpaca wrapper; CI grep test for order or position calls; startup aborts unless the paper endpoint is configured.
 - VM: key-only SSH from owner IP, no other inbound; systemd hardening; automatic security updates.
 - Cloudflare Access for owner plus allowlist; Worker verifies the JWT itself. No personal or financial data stored.
@@ -249,7 +253,7 @@ The goal is the rigor quant firms apply, scaled to one person.
 
 | Phase | Done when |
 |---|---|
-| P0 Infra | Access blocks unauthenticated requests; service-token ingest returns 200; Telegram test message arrives; Oracle PAYG plus budget alert in place |
+| P0 Infra | Access blocks unauthenticated requests; service-token ingest returns 200; Oracle PAYG plus budget alert in place |
 | P1 Data | One week of runs: ≥ 99% of 5-min cycles complete; self-heal verified by killing the service mid-session |
 | P2 Detect + score | Fixture tests for every rule; look-ahead invariance test passes |
 | P3 UI | Board, symbol sheet, decision log and My List usable on phone; stale badge works |

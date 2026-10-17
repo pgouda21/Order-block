@@ -1,4 +1,7 @@
-"""Telegram delivery, locked to the single configured chat (CLAUDE.md rule 7).
+"""Optional Telegram delivery, locked to the single configured chat (CLAUDE.md rule 7).
+
+Off by default (Plan v1.3): alerts and digests show on the portal, and this client is
+only built when TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are set.
 
 The bot only sends. It never reads updates, so messages from other chats are
 ignored by construction. Callers cannot choose a recipient. Messages carry

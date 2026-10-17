@@ -1,7 +1,7 @@
 # P0 acceptance check. Runs under the same user, env file and sandbox as the scanner:
 #   sudo systemctl start marketboard-selftest && journalctl -u marketboard-selftest -n 20 --no-pager
 [Unit]
-Description=MarketBoard P0 self-test (Alpaca clock, ingest ping, Telegram test message)
+Description=MarketBoard P0 self-test (Alpaca clock, ingest ping; Telegram only if configured)
 Wants=network-online.target
 After=network-online.target
 
